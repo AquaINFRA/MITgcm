@@ -14,8 +14,16 @@
 
 import numpy as np
 from numpy import cos, pi
+import logging
+import os
+LOGGER = logging.getLogger(__name__)
 
-def gendata(Ho=1800, nx=62, ny=62, xo=0, yo=15, dx=1, dy=1, tauMax=0.1, Tmin=0, Tmax=30):
+
+def gendata(Ho=1800, nx=62, ny=62, xo=0, yo=15, dx=1, dy=1, tauMax=0.1, Tmin=0, Tmax=30, LOGGER=None):
+
+    if not LOGGER is None:
+        LOGGER.info('Current working directory: %s' % os.getcwd())
+        LOGGER.info('Contents of cwd: %s' % os.listdir())
 
     xeast  = xo + (nx-2)*dx   # eastern extent of ocean domain
     ynorth = yo + (ny-2)*dy   # northern extent of ocean domain
@@ -71,4 +79,4 @@ if __name__ == '__main__':
     Tmin = 0
     Tmax = 30
 
-    gendata(Ho=Ho, nx=nx, ny=ny, xo=xo, yo=yo, dx=dx, dy=dy, tauMax=tauMax, Tmin=Tmin, Tmax=Tmax)
+    gendata(Ho=Ho, nx=nx, ny=ny, xo=xo, yo=yo, dx=dx, dy=dy, tauMax=tauMax, Tmin=Tmin, Tmax=Tmax, LOGGER=LOGGER)

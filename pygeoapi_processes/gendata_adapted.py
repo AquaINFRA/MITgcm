@@ -15,15 +15,8 @@
 import numpy as np
 from numpy import cos, pi
 
+def gendata(Ho=1800, nx=62, ny=62, xo=0, yo=15, dx=1, dy=1, tauMax=0.1, Tmin=0, Tmax=30):
 
-def gendata():
-    Ho = 1800  # depth of ocean (m)
-    nx = 62    # gridpoints in x
-    ny = 62    # gridpoints in y
-    xo = 0     # origin in x,y for ocean domain
-    yo = 15    # (i.e. southwestern corner of ocean domain)
-    dx = 1     # grid spacing in x (degrees longitude)
-    dy = 1     # grid spacing in y (degrees latitude)
     xeast  = xo + (nx-2)*dx   # eastern extent of ocean domain
     ynorth = yo + (ny-2)*dy   # northern extent of ocean domain
 
@@ -52,7 +45,6 @@ def gendata():
     # See section 2.11.4 of the MITgcm users manual.
 
     # Zonal wind-stress
-    tauMax = 0.1
     x = np.linspace(xo-dx, xeast, nx)
     y = np.linspace(yo-dy, ynorth, ny) + dy/2
     Y, X = np.meshgrid(y, x, indexing='ij')     # zonal wind-stress on (XG,YC) points
@@ -67,4 +59,16 @@ def gendata():
     Trest.astype('>f4').tofile('SST_relax.bin')
 
 if __name__ == '__main__':
-    gendata()
+
+    Ho = 1800  # depth of ocean (m)
+    nx = 62    # gridpoints in x
+    ny = 62    # gridpoints in y
+    xo = 0     # origin in x,y for ocean domain
+    yo = 15    # (i.e. southwestern corner of ocean domain)
+    dx = 1     # grid spacing in x (degrees longitude)
+    dy = 1     # grid spacing in y (degrees latitude)
+    tauMax = 0.1 # Zonal wind-stress
+    Tmin = 0
+    Tmax = 30
+
+    gendata(Ho=Ho, nx=nx, ny=ny, xo=xo, yo=yo, dx=dx, dy=dy, tauMax=tauMax, Tmin=Tmin, Tmax=Tmax)

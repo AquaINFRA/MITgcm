@@ -19,9 +19,10 @@ import os
 LOGGER = logging.getLogger(__name__)
 
 
-def gendata(Ho=1800, nx=62, ny=62, xo=0, yo=15, dx=1, dy=1, tauMax=0.1, Tmin=0, Tmax=30, LOGGER=None):
+def gendata(out_path='./', Ho=1800, nx=62, ny=62, xo=0, yo=15, dx=1, dy=1, tauMax=0.1, Tmin=0, Tmax=30, LOGGER=None):
 
     if not LOGGER is None:
+        LOGGER.info('Running adapted gendata.py...')
         LOGGER.info('Current working directory: %s' % os.getcwd())
         LOGGER.info('Contents of cwd: %s' % os.listdir())
 
@@ -35,7 +36,12 @@ def gendata(Ho=1800, nx=62, ny=62, xo=0, yo=15, dx=1, dy=1, tauMax=0.1, Tmin=0, 
     h[:, [0,-1]] = 0   # set ocean depth to zero at east and west walls
     h[[0,-1], :] = 0   # set ocean depth to zero at south and north walls
     # save as single-precision (float32) with big-endian byte ordering
-    h.astype('>f4').tofile('bathy.bin')
+    outfile_bathy = out_path.rstrip('/')+'/bathy.bin'
+
+    if LOGGER is not None:
+        LOGGER.info('Writing bathyFile: %s' % outfile_bathy)
+
+    h.astype('>f4').tofile(outfile_bathy)
 
     # ocean domain extends from (xo,yo) to (xeast,ynorth)
     # (i.e. the ocean spans nx-2, ny-2 grid cells)
@@ -57,14 +63,25 @@ def gendata(Ho=1800, nx=62, ny=62, xo=0, yo=15, dx=1, dy=1, tauMax=0.1, Tmin=0, 
     y = np.linspace(yo-dy, ynorth, ny) + dy/2
     Y, X = np.meshgrid(y, x, indexing='ij')     # zonal wind-stress on (XG,YC) points
     tau = -tauMax * cos(2*pi*((Y-yo)/(ny-2)/dy))  # ny-2 accounts for walls at N,S boundaries
-    tau.astype('>f4').tofile('windx_cosy.bin')
+    outfile_windx_cosy = out_path.rstrip('/')+'/windx_cosy.bin'
+
+    if LOGGER is not None:
+        LOGGER.info('Writing zonalWindFile: %s' % outfile_windx_cosy)
+
+    tau.astype('>f4').tofile(outfile_windx_cosy)
 
     # Restoring temperature (function of y only,
     # from Tmax at southern edge to Tmin at northern edge)
     Tmax = 30
     Tmin = 0
     Trest = (Tmax-Tmin)/(ny-2)/dy * (ynorth-Y) + Tmin # located and computed at YC points
-    Trest.astype('>f4').tofile('SST_relax.bin')
+    outfile_SST_relax = out_path.rstrip('/')+'/SST_relax.bin'
+
+    if LOGGER is not None:
+        LOGGER.info('Writing thetaClimFile: %s' % outfile_SST_relax)
+
+    Trest.astype('>f4').tofile(outfile_SST_relax)
+
 
 if __name__ == '__main__':
 
@@ -79,4 +96,13 @@ if __name__ == '__main__':
     Tmin = 0
     Tmax = 30
 
-    gendata(Ho=Ho, nx=nx, ny=ny, xo=xo, yo=yo, dx=dx, dy=dy, tauMax=tauMax, Tmin=Tmin, Tmax=Tmax, LOGGER=LOGGER)
+    out_path = '.'
+    gendata(out_path=out_path, Ho=Ho, nx=nx, ny=ny, xo=xo, yo=yo, dx=dx, dy=dy, tauMax=tauMax, Tmin=Tmin, Tmax=Tmax, LOGGER=LOGGER)
+
+    # Note:
+    # This script writes three files, whose names are defined here:
+    # https://github.com/MITgcm/MITgcm/blob/master/verification/tutorial_baroclinic_gyre/input/data
+    # See:
+    #   bathyFile='bathy.bin',
+    #   zonalWindFile='windx_cosy.bin',
+    #   thetaClimFile='SST_relax.bin',

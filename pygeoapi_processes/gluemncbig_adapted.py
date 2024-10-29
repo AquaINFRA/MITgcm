@@ -38,6 +38,10 @@ gluemncbig -o BIO.nc -v 'BIO_*' mnc_*/ptr_tave.*.nc
 
 from __future__ import print_function
 
+import logging
+LOGGER = logging.getLogger(__name__)
+
+
 # NetCDF reader/writer module modified from pupynere,
 # https://bitbucket.org/robertodealmeida/pupynere/
 # to allow delayed reading/writing of variable data.
@@ -1221,6 +1225,8 @@ NetCDFVariable = netcdf_variable
 #if __name__ == '__main__':
 def glue(outname, fnames, version, verbose=False, progress=True, manytiles=False):
     # former main method! now to be called from pygeoapi service...
+    LOGGER.info('#### outname: %s' % outname)
+    LOGGER.info('#### fnames: %s' % fnames)
 
     import sys
     import os
@@ -1238,6 +1244,7 @@ def glue(outname, fnames, version, verbose=False, progress=True, manytiles=False
 
     tilepatt = re.compile(r'\.t([0-9]{3}[0-9]*)\.nc$')
     iterpatt = re.compile(r'(\.[0-9]{10})$')
+    LOGGER.info('#### tilepatt: %s' % tilepatt)
 
     # parse command-line arguments
     # Note: This does not work when calling the script from inside another script!
@@ -1245,6 +1252,7 @@ def glue(outname, fnames, version, verbose=False, progress=True, manytiles=False
     # ran whichever python program is calling this. In our AquaINFRA case, we run
     # this script from a pygeoapi installation, so the arguments that end up here
     # are the arguments passed to pygeoapi, which makes absolutely no sense here...
+    # As the pygeoapi was run with "pygeoapi serve", the passed command line arg was "serve"...
     #
     #try:
     #    optlist,fnames = getopt(sys.argv[1:], '2qho:v:', ['many', 'verbose', 'help'])
@@ -1279,10 +1287,13 @@ def glue(outname, fnames, version, verbose=False, progress=True, manytiles=False
     writeopts = dict(delay=True, version=version)
 
     if len(fnames) == 1 and sum(s in fnames[0] for s in '*?[]'):
+        LOGGER.info('#### Does this happen? %s  %s' % (len(fnames), sum(s in fnames[0] for s in '*?[]')))
         globpatt = fnames[0]
         fnames = glob.glob(globpatt)
         if len(fnames) == 0:
             raise IOError('No files matching {0}', globpatt)
+
+    LOGGER.info('#### fnames before sort: %s' % fnames)
 
     fnames.sort()
 
@@ -1291,6 +1302,7 @@ def glue(outname, fnames, version, verbose=False, progress=True, manytiles=False
     # files without iteration number
     files0 = {}
     for fname in fnames:
+        LOGGER.info('#### Now treating: %s' % fname)
         tn = tilepatt.search(fname).group(1)
         base = tilepatt.sub('', fname)
         m = iterpatt.search(base)
